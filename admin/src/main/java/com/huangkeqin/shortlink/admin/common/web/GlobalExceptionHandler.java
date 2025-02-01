@@ -54,7 +54,7 @@ public class GlobalExceptionHandler {
         return Results.failure(ex);
     }
 
-    /** 
+    /**
      * 拦截未捕获异常
      */
     @ExceptionHandler(value = Throwable.class)
