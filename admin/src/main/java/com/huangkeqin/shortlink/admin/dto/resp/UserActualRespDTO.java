@@ -10,7 +10,7 @@ import lombok.Data;
  * @date
  */
 @Data
-public class UserRespDTO {
+public class UserActualRespDTO {
     /**
      * 用户ID，唯一标识一个用户
      */
@@ -26,7 +26,6 @@ public class UserRespDTO {
     /**
      * 电话号码，用户的联系方式
      */
-    @JsonSerialize(using = PhoneDesensitizationSerializer.class)
     private String phone;
     /**
      * 邮箱地址，用于用户注册、找回密码等
