@@ -16,8 +16,11 @@ public class RBloomFilterConfiguration {
     @Bean
     //该方法用于创建并初始化一个布隆过滤器，防止用户注册时查询数据库。
     public RBloomFilter<String> userRegisterCachePenetrationBloomFilter(RedissonClient redissonClient) {
+        // 获取名为"userRegisterCachePenetrationBloomFilter"的布隆过滤器实例
         RBloomFilter<String> cachePenetrationBloomFilter = redissonClient.getBloomFilter("userRegisterCachePenetrationBloomFilter");
+        // 尝试初始化布隆过滤器，参数分别为预计插入的元素数量和假阳性率
         cachePenetrationBloomFilter.tryInit(100000000L, 0.001);
+        // 返回初始化过的布隆过滤器实例
         return cachePenetrationBloomFilter;
     }
 }
