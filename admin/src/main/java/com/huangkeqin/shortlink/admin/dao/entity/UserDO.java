@@ -1,6 +1,10 @@
 package com.huangkeqin.shortlink.admin.dao.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.huangkeqin.shortlink.admin.common.serialize.PhoneDesensitizationSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,14 +55,17 @@ public class UserDO {
     /**
      * 创建时间，记录用户何时被创建
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
     /**
      * 更新时间，记录用户信息最后一次更新的时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
     /**
      * 删除标志，用于软删除用户，0表示未删除，1表示已删除
      */
+    @TableField(fill = FieldFill.INSERT)
     private int delFlag;
 
 
