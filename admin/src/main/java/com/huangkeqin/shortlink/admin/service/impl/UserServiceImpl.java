@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import static com.huangkeqin.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
+import static com.huangkeqin.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_EXIST;
 
 
 /**
@@ -72,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public void register(UserRegisterReqDTO requestParam) {
         if (!hasUsername(requestParam.getUsername())) {
-            throw new ClientException(UserErrorCodeEnum.USER_NAME_EXIST);
+            throw new ClientException(USER_NAME_EXIST);
         }
         //获取分布式锁，确保并发安全
         RLock lock = redissonClient.getLock(LOCK_USER_REGISTER_KEY + requestParam.getUsername());
@@ -86,9 +87,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 }
                 //插入成功后，将用户名添加到布隆过滤器中，用于解决缓存穿透问题
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+                return;
             }
             //如果获取锁失败或用户名已存在，抛出相应异常
-            throw new ClientException("用户名已存在");
+            throw new ClientException(USER_NAME_EXIST);
         } finally {
             //最后释放锁
             lock.unlock();
