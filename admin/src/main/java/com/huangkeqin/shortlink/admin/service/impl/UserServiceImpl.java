@@ -158,7 +158,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         }
         // 如果用户未登录，生成新的token并保存用户登录状态到Redis
         String uuid = UUID.randomUUID().toString();
+        // 使用Redis的Hash操作，将用户登录信息存储到缓存中
+        // 这里的键是用户登录键加上用户名，值是用户的UUID和用户信息的JSON字符串表示
         stringRedisTemplate.opsForHash().put(USER_LOGIN_KEY + requestParam.getUsername(), uuid, JSON.toJSONString(userDO));
+        // 设置用户登录信息在缓存中的过期时间
+        // 这里设置30分钟的过期时间，以确保用户信息的安全性和缓存的有效性  expire:到期
         stringRedisTemplate.expire(USER_LOGIN_KEY + requestParam.getUsername(), 30L, TimeUnit.MINUTES);
         return new UserLoginRespDTO(uuid);
     }
@@ -172,6 +176,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public Boolean checkLogin(String username,String token) {
         return stringRedisTemplate.opsForHash().get(USER_LOGIN_KEY+username, token) != null;
+    }
+
+    /**
+     * 用户退出登录
+     * @param username
+     * @param token
+     */
+    @Override
+    public void logout(String username, String token) {
+        if (checkLogin(username, token)) {
+            stringRedisTemplate.delete(USER_LOGIN_KEY + username);
+            return;
+        }
+        throw new ClientException("用户Token不存在或用户未登录");
     }
 
 }
