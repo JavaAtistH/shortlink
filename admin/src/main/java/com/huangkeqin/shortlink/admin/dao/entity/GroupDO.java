@@ -45,6 +45,4 @@ public class GroupDO extends BaseDO {
      */
     private Integer sortOrder;
 
-
-
 }
