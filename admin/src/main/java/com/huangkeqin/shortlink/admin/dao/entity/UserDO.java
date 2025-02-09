@@ -27,7 +27,7 @@ public class UserDO {
     /**
      * 用户ID，唯一标识一个用户
      */
-    private Integer id;
+    private Long id;
     /**
      * 用户名，用户登录时使用
      */
