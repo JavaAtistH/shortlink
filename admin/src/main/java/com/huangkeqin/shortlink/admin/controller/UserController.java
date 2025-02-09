@@ -4,8 +4,11 @@ import cn.hutool.core.bean.BeanUtil;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
 import com.huangkeqin.shortlink.admin.common.convention.result.Results;
 import com.huangkeqin.shortlink.admin.common.enums.UserErrorCodeEnum;
+import com.huangkeqin.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.UserRegisterReqDTO;
+import com.huangkeqin.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.UserActualRespDTO;
+import com.huangkeqin.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.UserRespDTO;
 import com.huangkeqin.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -59,4 +62,33 @@ public class UserController {
             userService.register(requestParam);
             return Results.success();
     }
+
+    /**
+     * 更新用户信息
+     * @param UserUpdateReqDTO
+     * @return
+     */
+    @PutMapping("/api/short-link/v1/user")
+    public Result<Void> update(@RequestBody UserUpdateReqDTO UserUpdateReqDTO) {
+        userService.update(UserUpdateReqDTO);
+        return Results.success();
+    }
+
+    /**
+     * 用户登录
+     * @param UserLoginReqDTO
+     * @return
+     */
+    @PostMapping("/api/short-link/v1/user/login")
+    public Result<UserLoginRespDTO> login(@RequestBody UserLoginReqDTO UserLoginReqDTO){
+        UserLoginRespDTO result = userService.login(UserLoginReqDTO);
+        return Results.success(result);
+    }
+
+    @GetMapping("/api/short-link/v1/user/check-login")
+    public Result<Boolean> checkLogin(@RequestParam ("username") String username,@RequestParam ("token") String token){
+        return Results.success(userService.checkLogin(username,token));
+    }
+
+
 }
