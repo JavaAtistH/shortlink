@@ -2,6 +2,7 @@ package com.huangkeqin.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.huangkeqin.shortlink.admin.dao.entity.GroupDO;
+import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 
@@ -30,5 +31,15 @@ public interface GroupService extends IService<GroupDO> {
      */
     void updateGroup(ShortLinkGroupUpdateReqDTO requestParam);
 
+    /**
+     * 删除短链接分组
+     * @param gid
+     */
     void deleteGroup(String gid);
+
+    /**
+     * 短链接分组排序
+     * @param requestParam
+     */
+    void sortGroup(List<ShortLinkGroupSortReqDTO> requestParam);
 }

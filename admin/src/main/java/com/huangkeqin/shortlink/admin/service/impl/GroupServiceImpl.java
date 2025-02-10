@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.huangkeqin.shortlink.admin.common.biz.user.UserContext;
 import com.huangkeqin.shortlink.admin.dao.entity.GroupDO;
 import com.huangkeqin.shortlink.admin.dao.mapper.GroupMapper;
+import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
 import com.huangkeqin.shortlink.admin.service.GroupService;
@@ -120,5 +121,25 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         groupDO.setDelFlag(1);
         // 执行更新操作，应用上述设置的更新条件和新的组信息
         baseMapper.update(groupDO, deleteWrapper);
+    }
+
+    /**
+     * 短链接分组排序
+     * 这里是前端将分组序号传递过来，后端将每个用户下面的分组序号在数据库里面修改就是
+     * @param requestParam
+     */
+    @Override
+    public void sortGroup(List<ShortLinkGroupSortReqDTO> requestParam) {
+        //forEach循环遍历集合里面的元素，获取前端传过来的每个分组的序号值将其修改
+        requestParam.forEach(each -> {
+            GroupDO groupDO =GroupDO.builder()
+                    .sortOrder(each.getSortOrder())
+                    .build();
+            LambdaUpdateWrapper<GroupDO> updateWrapper = Wrappers.lambdaUpdate(GroupDO.class)
+                    .eq(GroupDO::getUsername, UserContext.getUsername())
+                    .eq(GroupDO::getGid, each.getGid())
+                    .eq(GroupDO::getDelFlag, 0);
+            baseMapper.update(groupDO, updateWrapper);
+        });
     }
 }
