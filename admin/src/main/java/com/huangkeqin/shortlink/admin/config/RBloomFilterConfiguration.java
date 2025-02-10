@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RBloomFilterConfiguration {
     /**
-     * 防止用户注册查询数据库的布隆过滤器
+     * 防止用户重复注册查询数据库的布隆过滤器
      */
     @Bean
     //该方法用于创建并初始化一个布隆过滤器，防止用户注册时查询数据库。
