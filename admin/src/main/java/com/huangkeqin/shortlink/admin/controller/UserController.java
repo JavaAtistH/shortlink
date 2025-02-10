@@ -3,7 +3,6 @@ package com.huangkeqin.shortlink.admin.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
 import com.huangkeqin.shortlink.admin.common.convention.result.Results;
-import com.huangkeqin.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.huangkeqin.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.UserUpdateReqDTO;
@@ -12,7 +11,6 @@ import com.huangkeqin.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.UserRespDTO;
 import com.huangkeqin.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.web.bind.annotation.*;
 
 /**
