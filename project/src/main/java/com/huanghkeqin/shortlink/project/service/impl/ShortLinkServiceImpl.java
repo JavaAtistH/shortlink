@@ -3,13 +3,16 @@ package com.huanghkeqin.shortlink.project.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.StrBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.huanghkeqin.shortlink.project.common.convention.exception.ServiceException;
 import com.huanghkeqin.shortlink.project.dao.entity.ShortLinkDO;
 import com.huanghkeqin.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.huanghkeqin.shortlink.project.dto.req.ShortLinkCreateReqDTO;
+import com.huanghkeqin.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.huanghkeqin.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
+import com.huanghkeqin.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.huanghkeqin.shortlink.project.service.ShortLinkService;
 import com.huanghkeqin.shortlink.project.toolkit.HashUtil;
 import lombok.RequiredArgsConstructor;
@@ -110,6 +113,29 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
         }
         return shortUri;
+    }
+
+
+    /**
+     * 分页查询短链接
+     * @param requestParam 分页查询短链接请求参数
+     * @return
+     */
+
+    @Override
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
+        //构建查询条件
+        LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
+                //查询 gid 等于 gid 变量的记录
+                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                //查询 enableStatus 等于 0 的记录
+                .eq(ShortLinkDO::getEnableStatus, 0)
+                //查询 delFlag 等于 0 的记录
+                .eq(ShortLinkDO::getDelFlag, 0)
+                .orderByDesc(ShortLinkDO::getCreateTime);
+        IPage<ShortLinkDO> resultPage= baseMapper.selectPage(requestParam, queryWrapper);
+        //将查询结果转换为 ShortLinkPageRespDTO 对象
+        return resultPage.convert(each -> BeanUtil.toBean(each,ShortLinkPageRespDTO.class));
     }
 
 }

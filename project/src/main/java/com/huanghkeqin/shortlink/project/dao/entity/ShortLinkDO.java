@@ -25,6 +25,10 @@ public class ShortLinkDO extends BaseDO {
     private String originUrl; // 原始链接
     private Integer clickNum; // 点击量
     private String gid; // 分组标识
+    /**
+     * 网站图标
+     */
+    private String favicon;
     private Integer enableStatus; // 启用标识 0：未启用 1：已启用
     private Integer createdType; // 创建类型 0：控制台 1：接口
     private Integer  validDateType; // 有效期类型 0：永久有效 1：用户自定义
