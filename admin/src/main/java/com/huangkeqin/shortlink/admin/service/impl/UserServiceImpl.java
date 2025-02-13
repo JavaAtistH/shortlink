@@ -23,6 +23,7 @@ import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.huangkeqin.shortlink.admin.common.constant.RedisCacheConstant.LOCK_USER_REGISTER_KEY;
 import static com.huangkeqin.shortlink.admin.common.constant.RedisCacheConstant.USER_LOGIN_KEY;
+import static com.huangkeqin.shortlink.admin.common.enums.UserErrorCodeEnum.USER_EXIST;
 import static com.huangkeqin.shortlink.admin.common.enums.UserErrorCodeEnum.USER_NAME_EXIST;
 
 
@@ -93,10 +95,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         try {
             //尝试获取锁成功后，将用户信息插入数据库。
             if (lock.tryLock()) {
-                int insert = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
-                if (insert < 1) {
-                    //如果插入失败，抛出用户新增失败异常
-                    throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                try {
+                    int insert = baseMapper.insert(BeanUtil.toBean(requestParam, UserDO.class));
+                    if (insert < 1) {
+                        //如果插入失败，抛出用户新增失败异常
+                        throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+                    }
+                } catch (DuplicateKeyException ex) {
+                    throw new ClientException(USER_EXIST);
                 }
                 //插入成功后，将用户名添加到布隆过滤器中，用于解决缓存穿透问题
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
