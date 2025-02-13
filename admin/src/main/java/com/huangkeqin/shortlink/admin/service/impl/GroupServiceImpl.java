@@ -34,20 +34,30 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
     };
 
     /**
-     * 新增短链接分组
      *
+     *  用户登录创建短链接分组方法
      * @param groupName 短链接分组名
      */
     @Override
     public void saveGroup(String groupName) {
+        saveGroup(UserContext.getUsername(), groupName);
+    }
+
+    /**
+     * 用户注册时，创建默认短链接分组方法
+     * @param username
+     * @param groupName 用户名
+     */
+    @Override
+    public void saveGroup(String username, String groupName) {
         String gid;
         do {
             gid = RandomGenerator.generateRandom();
-        } while (!hasGid(gid));
+        } while (!hasGid(username,gid));
         GroupDO groupDO = GroupDO.builder()
                 .gid(RandomGenerator.generateRandom())
                 .sortOrder(0)
-                .username(UserContext.getUsername())
+                .username(username)
                 .name(groupName)
                 .build();
         baseMapper.insert(groupDO);
@@ -59,14 +69,14 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
      * @param gid
      * @return
      */
-    private boolean hasGid(String gid) {
+    private boolean hasGid(String username,String gid) {
         //使用LambdaQueryWrapper构建查询条件
         LambdaQueryWrapper<GroupDO> queryWrapper = Wrappers.lambdaQuery(GroupDO.class)
                 /*GroupDO::getGid 这个写法是方法引用，它的作用是获取 GroupDO 实体类中的 gid 字段，并用于构造查询条件*/
                 //查询 gid 等于 gid 变量的记录
                 .eq(GroupDO::getDelFlag, 0)
                 .eq(GroupDO::getGid, gid)
-                .eq(GroupDO::getUsername, UserContext.getUsername());
+                .eq(GroupDO::getUsername, Optional.ofNullable(username).orElse(UserContext.getUsername()));
         GroupDO hasGroupFlag = baseMapper.selectOne(queryWrapper);
         return hasGroupFlag == null;
     }
