@@ -2,8 +2,7 @@ package com.huangkeqin.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
-import com.huangkeqin.shortlink.admin.common.convention.result.Results;
-import com.huangkeqin.shortlink.admin.remote.dto.ShortLinkRemoteService;
+import com.huangkeqin.shortlink.admin.remote.ShortLinkRemoteService;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
