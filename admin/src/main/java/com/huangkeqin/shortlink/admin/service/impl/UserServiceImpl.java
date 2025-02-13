@@ -17,6 +17,7 @@ import com.huangkeqin.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.UserRespDTO;
+import com.huangkeqin.shortlink.admin.service.GroupService;
 import com.huangkeqin.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
@@ -45,6 +46,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
+
 
     @Override
     /**
@@ -106,6 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 }
                 //插入成功后，将用户名添加到布隆过滤器中，用于解决缓存穿透问题
                 userRegisterCachePenetrationBloomFilter.add(requestParam.getUsername());
+                groupService.saveGroup("默认分组");
                 return;
             }
             //如果获取锁失败或用户名已存在，抛出相应异常
