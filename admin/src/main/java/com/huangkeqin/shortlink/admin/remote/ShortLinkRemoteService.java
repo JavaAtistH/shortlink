@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
+import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
@@ -27,11 +28,11 @@ public interface ShortLinkRemoteService {
      * @param requestParam 短链接创建请求参数对象，包含创建短链接所需的信息
      * @return ShortLinkCreateRespDTO 短链接创建响应对象，包含创建后的短链接信息
      */
-    default Result<ShortLinkCreateRespDTO> createShortLink(ShortLinkCreateReqDTO requestParam){
+    default Result<ShortLinkCreateRespDTO> createShortLink(ShortLinkCreateReqDTO requestParam) {
         // 将请求参数转换为JSON字符串形式，以便通过HTTP POST请求发送
         String resultBodyStr = HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/create", JSON.toJSONString(requestParam));
         // 解析响应字符串为指定类型的对象，以获取短链接创建结果
-        return JSON.parseObject(resultBodyStr,new TypeReference<>() {
+        return JSON.parseObject(resultBodyStr, new TypeReference<>() {
         });
     }
 
@@ -42,15 +43,15 @@ public interface ShortLinkRemoteService {
      *
      * @param requestParam 包含分页查询的请求参数，如groupId (gid), 当前页码 (current) 和每页大小 (size)
      * @return 返回一个包含分页响应对象的Result对象，泛型为ShortLinkPageRespDTO
-     *         包含有关短链接页面查询结果的详细信息
+     * 包含有关短链接页面查询结果的详细信息
      */
-    default Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam){
+    default Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         // 初始化一个HashMap来存储请求参数，以便于HTTP请求中使用
-        Map<String,Object> resultMap=new HashMap<>();
+        Map<String, Object> resultMap = new HashMap<>();
         // 将groupId (gid), 当前页码 (current) 和每页大小 (size) 放入结果映射中
-        resultMap.put("gid",requestParam.getGid());
-        resultMap.put("current",requestParam.getCurrent());
-        resultMap.put("size",requestParam.getSize());
+        resultMap.put("gid", requestParam.getGid());
+        resultMap.put("current", requestParam.getCurrent());
+        resultMap.put("size", requestParam.getSize());
         // 使用HttpUtil工具类发送GET请求到指定URL，并携带请求参数，获取分页查询的结果
         String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/page", resultMap);
         // 使用FastJSON解析HTTP响应字符串，转换为指定类型的对象
@@ -61,14 +62,23 @@ public interface ShortLinkRemoteService {
 
     /**
      * 查询分组短链接总量
+     *
      * @param requestParam
      * @return
      */
-    default Result<List<ShortLinkGroupCountQueryRespDTO>> linkGroupShortLinkCount(List<String> requestParam){
-        Map<String,Object> resultMap=new HashMap<>();
-        resultMap.put("requestParam",requestParam);
+    default Result<List<ShortLinkGroupCountQueryRespDTO>> linkGroupShortLinkCount(List<String> requestParam) {
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("requestParam", requestParam);
         String resultCountQueryStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/count", resultMap);
         return JSON.parseObject(resultCountQueryStr, new TypeReference<>() {
         });
     }
+
+    /**
+     * 修改短链接
+     * @param requestParam 短链接修改请求参数对象，包含修改短链接所需的信息
+     */
+    default void updateShortLink(ShortLinkUpdateReqDTO requestParam){
+        HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/update", JSON.toJSONString(requestParam));
+    };
 }
