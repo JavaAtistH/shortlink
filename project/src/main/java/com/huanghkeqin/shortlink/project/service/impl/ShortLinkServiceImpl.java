@@ -24,6 +24,7 @@ import com.huanghkeqin.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDT
 import com.huanghkeqin.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.huanghkeqin.shortlink.project.service.ShortLinkService;
 import com.huanghkeqin.shortlink.project.toolkit.HashUtil;
+import com.huanghkeqin.shortlink.project.toolkit.LinkUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.huanghkeqin.shortlink.project.common.constant.RedisKeyConstant.*;
+import static com.huanghkeqin.shortlink.project.common.constant.ShortLinkConstant.DEFAULT_CACHE_VALID_TIME;
 
 /**
  * 短链接接口实现层
@@ -110,6 +112,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
             //如果为空，则说明数据库中确实没有该短链接，判断为了存在，有误判
         }
+        //缓存预热，创建出来就加到缓存中
+        stringRedisTemplate.opsForValue()
+                .set(fullShortUrl,requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()),TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         // 构建并返回短链接创建响应对象
         return ShortLinkCreateRespDTO.builder()
@@ -149,8 +154,6 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         return shortUri;
     }
-
-
     /**
      * 分页查询短链接
      *
@@ -294,7 +297,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
             if (shortLinkGotoDO == null) {
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-",30, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-",30, TimeUnit.MINUTES);
                 //严谨来说此处要进行封控
                 return;
             }
