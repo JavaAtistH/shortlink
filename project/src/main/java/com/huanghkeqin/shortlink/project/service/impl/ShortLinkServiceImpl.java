@@ -45,8 +45,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.huanghkeqin.shortlink.project.common.constant.RedisKeyConstant.*;
-import static com.huanghkeqin.shortlink.project.common.constant.ShortLinkConstant.DEFAULT_CACHE_VALID_TIME;
-
 /**
  * 短链接接口实现层
  */
