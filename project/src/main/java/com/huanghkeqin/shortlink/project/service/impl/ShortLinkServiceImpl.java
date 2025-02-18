@@ -38,6 +38,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -114,7 +115,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         //缓存预热，创建出来就加到缓存中
         stringRedisTemplate.opsForValue()
-                .set(fullShortUrl,requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()),TimeUnit.MILLISECONDS);
+                .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         // 构建并返回短链接创建响应对象
         return ShortLinkCreateRespDTO.builder()
@@ -154,6 +155,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         return shortUri;
     }
+
     /**
      * 分页查询短链接
      *
@@ -275,11 +277,11 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         //如果布隆过滤器中不存在，则直接返回
-        if (!contains){
+        if (!contains) {
             return;
         }
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
-        if(StrUtil.isNotBlank(gotoIsNullShortLink)){
+        if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
             return;
         }
         //分布式锁解决缓存击穿。  String.format fullShortUrl 的值格式化到 LOCK_GOTO_SHORT_LINK_KEY 中的指定位置，生成一个新的字符串。
@@ -297,7 +299,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
             ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(linkGotoQueryWrapper);
             if (shortLinkGotoDO == null) {
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-",30, TimeUnit.MINUTES);
+                //当没有此端链接的时候
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
                 //严谨来说此处要进行封控
                 return;
             }
@@ -309,8 +312,16 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getEnableStatus, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
             if (shortLinkDO != null) {
-                //第一把锁进来，将热点链接originalLink放入redis
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkDO.getOriginUrl());
+                //当查出来的短链接有效时间小于当前时间，处理方法和没有查到短链接的时候一样处理
+                if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                    return;
+                }
+                //缓存预热，创建出来就加到缓存中
+                stringRedisTemplate.opsForValue()
+                        .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl)
+                        ,shortLinkDO.getOriginUrl()
+                        , LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
                 //不为空，重定向到原始url
                 response.sendRedirect(shortLinkDO.getOriginUrl());
             }
