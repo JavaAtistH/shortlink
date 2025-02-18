@@ -278,10 +278,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         //如果布隆过滤器中不存在，则直接返回
         if (!contains) {
+            response.sendRedirect("/page/notfound");
             return;
         }
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
+            response.sendRedirect("/page/notfound");
             return;
         }
         //分布式锁解决缓存击穿。  String.format fullShortUrl 的值格式化到 LOCK_GOTO_SHORT_LINK_KEY 中的指定位置，生成一个新的字符串。
@@ -301,6 +303,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             if (shortLinkGotoDO == null) {
                 //当没有此端链接的时候
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                response.sendRedirect("/page/notfound");
                 //严谨来说此处要进行封控
                 return;
             }
@@ -315,6 +318,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 //当查出来的短链接有效时间小于当前时间，处理方法和没有查到短链接的时候一样处理
                 if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
                     stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                    response.sendRedirect("/page/notfound");
                     return;
                 }
                 //缓存预热，创建出来就加到缓存中
