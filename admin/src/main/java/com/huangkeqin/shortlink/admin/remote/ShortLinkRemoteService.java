@@ -5,10 +5,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
-import com.huangkeqin.shortlink.admin.remote.dto.req.RecycleBinSaveReqDTO;
-import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
-import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
-import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
+import com.huangkeqin.shortlink.admin.remote.dto.req.*;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
@@ -111,11 +108,11 @@ public interface ShortLinkRemoteService {
      * @param requestParam
      * @return
      */
-    default Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkPageReqDTO requestParam) {
+    default Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         // 初始化一个HashMap来存储请求参数，以便于HTTP请求中使用
         Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("gidList", requestParam.getGidList());
         // 将groupId (gid), 当前页码 (current) 和每页大小 (size) 放入结果映射中
-        resultMap.put("gid", requestParam.getGid());
         resultMap.put("current", requestParam.getCurrent());
         resultMap.put("size", requestParam.getSize());
         // 使用HttpUtil工具类发送GET请求到指定URL，并携带请求参数，获取分页查询的结果

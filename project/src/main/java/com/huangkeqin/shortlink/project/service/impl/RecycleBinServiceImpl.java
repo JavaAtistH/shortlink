@@ -10,6 +10,7 @@ import com.huangkeqin.shortlink.project.dao.entity.ShortLinkDO;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.huangkeqin.shortlink.project.dto.req.RecycleBinSaveReqDTO;
 import com.huangkeqin.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.huangkeqin.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.huangkeqin.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.huangkeqin.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -53,16 +54,16 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
      * @return
      */
     @Override
-    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO requestParam) {
+    public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO requestParam) {
         //构建查询条件
         LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
                 //查询 gid 等于 gid 变量的记录
-                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                .in(ShortLinkDO::getGid, requestParam.getGidList())
                 //查询 enableStatus 等于 0 的记录
                 .eq(ShortLinkDO::getEnableStatus, 1)
                 //查询 delFlag 等于 0 的记录
                 .eq(ShortLinkDO::getDelFlag, 0)
-                .orderByDesc(ShortLinkDO::getCreateTime);
+                .orderByDesc(ShortLinkDO::getUpdateTime);
         IPage<ShortLinkDO> resultPage = baseMapper.selectPage(requestParam, queryWrapper);
         //将查询结果转换为 ShortLinkPageRespDTO 对象
         return resultPage.convert(each -> {
