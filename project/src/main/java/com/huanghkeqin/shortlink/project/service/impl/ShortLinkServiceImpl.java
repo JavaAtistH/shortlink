@@ -50,6 +50,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static com.huanghkeqin.shortlink.project.common.constant.RedisKeyConstant.*;
+
 /**
  * 短链接接口实现层
  */
@@ -115,11 +116,12 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                 log.warn("短链接：{}重复入库", fullShortUrl);
                 throw new ServiceException("短链接生成重复");
             }
-            //如果为空，则说明数据库中确实没有该短链接，判断为了存在，有误判
         }
         //缓存预热，创建出来就加到缓存中
         stringRedisTemplate.opsForValue()
-                .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), requestParam.getOriginUrl(), LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()), TimeUnit.MILLISECONDS);
+                .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),
+                requestParam.getOriginUrl(),
+                LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         // 构建并返回短链接创建响应对象
         return ShortLinkCreateRespDTO.builder()
@@ -318,21 +320,19 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getDelFlag, 0)
                     .eq(ShortLinkDO::getEnableStatus, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (shortLinkDO != null) {
+            if (shortLinkDO == null || shortLinkDO.getValidDate().before(new Date())) {
                 //当查出来的短链接有效时间小于当前时间，处理方法和没有查到短链接的时候一样处理
-                if (shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
-                    response.sendRedirect("/page/notfound");
-                    return;
-                }
-                //缓存预热，创建出来就加到缓存中
-                stringRedisTemplate.opsForValue()
-                        .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl)
-                        ,shortLinkDO.getOriginUrl()
-                        , LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
-                //不为空，重定向到原始url
-                response.sendRedirect(shortLinkDO.getOriginUrl());
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
+                response.sendRedirect("/page/notfound");
+                return;
             }
+            //缓存预热，创建出来就加到缓存中
+            stringRedisTemplate.opsForValue()
+                    .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl)
+                            , shortLinkDO.getOriginUrl()
+                            , LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
+            //不为空，重定向到原始url
+            response.sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
             //释放锁
             lock.unlock();
@@ -341,6 +341,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     /**
      * 获取短链接原始链接网站图标
+     *
      * @param url
      * @return
      */
