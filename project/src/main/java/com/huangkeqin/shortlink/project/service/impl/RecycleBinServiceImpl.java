@@ -8,10 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.huangkeqin.shortlink.project.dao.entity.ShortLinkDO;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkMapper;
-import com.huangkeqin.shortlink.project.dto.req.RecycleBinRecoverReqDTO;
-import com.huangkeqin.shortlink.project.dto.req.RecycleBinSaveReqDTO;
-import com.huangkeqin.shortlink.project.dto.req.ShortLinkPageReqDTO;
-import com.huangkeqin.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
+import com.huangkeqin.shortlink.project.dto.req.*;
 import com.huangkeqin.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.huangkeqin.shortlink.project.service.RecycleBinService;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +49,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
 
     /**
      * 分页查询被回收的短链接
+     *
      * @param requestParam 分页查询短链接请求参数
      * @return
      */
@@ -77,6 +75,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
 
     /**
      * 将短链接从回收站恢复
+     *
      * @param requestParam 请求参数
      */
     @Override
@@ -91,5 +90,20 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
                 .build();
         baseMapper.update(shortLinkDO, updateWrapper);
         stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, requestParam.getFullShortUrl()));
+    }
+
+    /**
+     * 从回收站中删除短链接
+     *
+     * @param requestParam
+     */
+    @Override
+    public void removeRecycleBin(RecycleBinRemoveReqDTO requestParam) {
+        LambdaUpdateWrapper<ShortLinkDO> updateWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)
+                .eq(ShortLinkDO::getFullShortUrl, requestParam.getFullShortUrl())
+                .eq(ShortLinkDO::getGid, requestParam.getGid())
+                .eq(ShortLinkDO::getEnableStatus, 1)
+                .eq(ShortLinkDO::getDelFlag, 0);
+        baseMapper.delete(updateWrapper);
     }
 }
