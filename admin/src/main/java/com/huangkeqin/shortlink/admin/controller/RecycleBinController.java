@@ -31,7 +31,7 @@ public class RecycleBinController {
      * @param requestParam
      * @return
      */
-    @PostMapping("/api/short-link/v1/recycle-bin/save")
+    @PostMapping("/api/short-link/admin/v1/recycle-bin/save")
     public Result<Void> saveRecycleBin(@RequestBody RecycleBinSaveReqDTO requestParam) {
         shortLinkRemoteService.saveRecycleBin(requestParam);
         return Results.success();
@@ -43,9 +43,9 @@ public class RecycleBinController {
      * @param requestParam
      * @return
      */
-    @GetMapping("/api/short-link/v1/recycle-bin/page")
+    @GetMapping("/api/short-link/admin/v1/recycle-bin/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
-        return shortLinkRemoteService.pageShortLink(requestParam);
+        return shortLinkRemoteService.pageRecycleBinShortLink(requestParam);
     }
 
 

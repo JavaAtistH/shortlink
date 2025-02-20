@@ -105,4 +105,24 @@ public interface ShortLinkRemoteService {
     default void saveRecycleBin(@RequestBody RecycleBinSaveReqDTO requestParam){
         HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/save", JSON.toJSONString(requestParam));
     }
+
+    /**
+     * 分页查询已被回收的短链接
+     * @param requestParam
+     * @return
+     */
+    default Result<IPage<ShortLinkPageRespDTO>> pageRecycleBinShortLink(ShortLinkPageReqDTO requestParam) {
+        // 初始化一个HashMap来存储请求参数，以便于HTTP请求中使用
+        Map<String, Object> resultMap = new HashMap<>();
+        // 将groupId (gid), 当前页码 (current) 和每页大小 (size) 放入结果映射中
+        resultMap.put("gid", requestParam.getGid());
+        resultMap.put("current", requestParam.getCurrent());
+        resultMap.put("size", requestParam.getSize());
+        // 使用HttpUtil工具类发送GET请求到指定URL，并携带请求参数，获取分页查询的结果
+        String resultPageStr = HttpUtil.get("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/page", resultMap);
+        // 使用FastJSON解析HTTP响应字符串，转换为指定类型的对象
+        // 这里使用匿名内部类的方式指定类型引用，以解析复杂的泛型结构
+        return JSON.parseObject(resultPageStr, new TypeReference<>() {
+        });
+    }
 }
