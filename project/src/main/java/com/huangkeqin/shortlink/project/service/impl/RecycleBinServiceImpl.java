@@ -75,6 +75,10 @@ public class RecycleBinServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLin
         });
     }
 
+    /**
+     * 将短链接从回收站恢复
+     * @param requestParam 请求参数
+     */
     @Override
     public void recoverRecycleBin(RecycleBinRecoverReqDTO requestParam) {
         LambdaUpdateWrapper<ShortLinkDO> updateWrapper = Wrappers.lambdaUpdate(ShortLinkDO.class)

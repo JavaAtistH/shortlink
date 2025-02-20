@@ -46,7 +46,7 @@ public class RecycleBinController {
     }
 
     /**
-     * 将短链接移除回收站
+     * 将短链接从回收站恢复
      * @param requestParam
      * @return
      */
