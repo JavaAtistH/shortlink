@@ -1,6 +1,8 @@
 package com.huangkeqin.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.Week;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -12,8 +14,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.huangkeqin.shortlink.project.common.convention.exception.ClientException;
 import com.huangkeqin.shortlink.project.common.convention.exception.ServiceException;
 import com.huangkeqin.shortlink.project.common.enums.ValidDateTypeEnum;
+import com.huangkeqin.shortlink.project.dao.entity.LinkAccessStatsDO;
 import com.huangkeqin.shortlink.project.dao.entity.ShortLinkDO;
 import com.huangkeqin.shortlink.project.dao.entity.ShortLinkGotoDO;
+import com.huangkeqin.shortlink.project.dao.mapper.LinkAccessStatsDOMapper;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.huangkeqin.shortlink.project.dto.req.ShortLinkCreateReqDTO;
@@ -65,6 +69,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
     private final StringRedisTemplate stringRedisTemplate;
 
     private final RedissonClient redissonClient;
+
+    private final  LinkAccessStatsDOMapper  linkAccessStatsDOMapper;
 
     /**
      * 创建短链接
@@ -119,7 +125,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         }
         //缓存预热，创建出来就加到缓存中
         stringRedisTemplate.opsForValue()
-                .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),
+                .set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl),
                 requestParam.getOriginUrl(),
                 LinkUtil.getLinkCacheValidDate(requestParam.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
@@ -278,6 +284,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         //原始短链接
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(originalLink)) {
+            shortLinkStats(fullShortUrl,null,request,response);
             response.sendRedirect(originalLink);
             return;
         }
@@ -299,6 +306,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             //双重锁
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
             if (StrUtil.isNotBlank(originalLink)) {
+                shortLinkStats(fullShortUrl,null,request,response);
                 response.sendRedirect(originalLink);
                 return;
             }
@@ -328,14 +336,44 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
             //缓存预热，创建出来就加到缓存中
             stringRedisTemplate.opsForValue()
-                    .set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl)
+                    .set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl)
                             , shortLinkDO.getOriginUrl()
                             , LinkUtil.getLinkCacheValidDate(shortLinkDO.getValidDate()), TimeUnit.MILLISECONDS);
+            shortLinkStats(fullShortUrl,shortLinkDO.getGid(),request,response);
             //不为空，重定向到原始url
             response.sendRedirect(shortLinkDO.getOriginUrl());
         } finally {
             //释放锁
             lock.unlock();
+        }
+    }
+
+    private void shortLinkStats(String fullShortUrl,String gid,HttpServletRequest request,HttpServletResponse response){
+        try {
+            if(StrUtil.isBlank(gid)){
+                LambdaQueryWrapper<ShortLinkGotoDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkGotoDO.class)
+                        .eq(ShortLinkGotoDO::getFullShortUrl, fullShortUrl);
+                ShortLinkGotoDO shortLinkGotoDO = shortLinkGotoMapper.selectOne(queryWrapper);
+                gid = shortLinkGotoDO.getGid();
+            }
+            //获取小时
+            int hour = DateUtil.hour(new Date(), true);
+            //获取星期几
+            Week week = DateUtil.dayOfWeekEnum(new Date());
+            int weekValue = week.getIso8601Value();
+            LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
+                    .pv(1)
+                    .uv(1)
+                    .uip(1)
+                    .hour(hour)
+                    .weekday(weekValue)
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(new Date())
+                    .build();
+            linkAccessStatsDOMapper.shortLinkStats(linkAccessStatsDO);
+        } catch (Throwable ex) {
+            log.error("短链接统计短链接访问异常", ex);
         }
     }
 
