@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 地区统计返回持久层
  */
-public interface LinkLocaleStatsDOMapper extends BaseMapper<LinkLocaleStatsDO> {
+public interface LinkLocaleStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
 
 
 

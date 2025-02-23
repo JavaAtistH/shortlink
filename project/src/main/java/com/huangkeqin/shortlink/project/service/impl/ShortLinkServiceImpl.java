@@ -23,8 +23,8 @@ import com.huangkeqin.shortlink.project.dao.entity.LinkAccessStatsDO;
 import com.huangkeqin.shortlink.project.dao.entity.LinkLocaleStatsDO;
 import com.huangkeqin.shortlink.project.dao.entity.ShortLinkDO;
 import com.huangkeqin.shortlink.project.dao.entity.ShortLinkGotoDO;
-import com.huangkeqin.shortlink.project.dao.mapper.LinkAccessStatsDOMapper;
-import com.huangkeqin.shortlink.project.dao.mapper.LinkLocaleStatsDOMapper;
+import com.huangkeqin.shortlink.project.dao.mapper.LinkAccessStatsMapper;
+import com.huangkeqin.shortlink.project.dao.mapper.LinkLocaleStatsMapper;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkGotoMapper;
 import com.huangkeqin.shortlink.project.dao.mapper.ShortLinkMapper;
 import com.huangkeqin.shortlink.project.dto.req.ShortLinkCreateReqDTO;
@@ -78,9 +78,9 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     private final RedissonClient redissonClient;
 
-    private final LinkAccessStatsDOMapper linkAccessStatsDOMapper;
+    private final LinkAccessStatsMapper linkAccessStatsMapper;
 
-    private final LinkLocaleStatsDOMapper linkLocaleStatsDOMapper;
+    private final LinkLocaleStatsMapper linkLocaleStatsMapper;
 
     @Value("${short-link.stats.locale.amap-key}")
     private String statsLocaleAmapKey;
@@ -421,7 +421,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .gid(gid)
                     .date(new Date())
                     .build();
-            linkAccessStatsDOMapper.shortLinkStats(linkAccessStatsDO);
+            linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
             Map<String, Object> localeParamMap = new HashMap<>();
             //https://restapi.amap.com/v3/ip?ip=114.247.50.2&output=xml&key=<用户的key>
             //高德地图API用户密钥
@@ -443,7 +443,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                         .country("China")
                         .cnt(1)
                         .build();
-                linkLocaleStatsDOMapper.shortLinkLocaleStats(linkLocaleStatsDO);
+                linkLocaleStatsMapper.shortLinkLocaleStats(linkLocaleStatsDO);
             }
         } catch (Throwable ex) {
             log.error("短链接统计短链接访问异常", ex);

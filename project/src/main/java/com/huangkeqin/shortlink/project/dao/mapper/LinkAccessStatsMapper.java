@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 短链接基础访问监控持久层(对数据增删改查用的)
  */
-public interface LinkAccessStatsDOMapper extends BaseMapper<LinkAccessStatsDO> {
+public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
 
     /**
      * 记录基础访问监控数据
