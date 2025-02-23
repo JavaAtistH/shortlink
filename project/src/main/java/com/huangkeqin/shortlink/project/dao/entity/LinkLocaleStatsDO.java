@@ -16,7 +16,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("link_locale_stats")
+@TableName("t_link_locale_stats")
 public class LinkLocaleStatsDO extends BaseDO {
     /**
      * 完整短链接
