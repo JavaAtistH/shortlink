@@ -1,14 +1,13 @@
-package com.huangkeqin.shortlink.project.dto.req;
+package com.huangkeqin.shortlink.admin.remote.dto.req;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.huangkeqin.shortlink.project.dao.entity.LinkAccessLogsDO;
 import lombok.Data;
 
 /**
  * 短链接监控访问记录请求参数
  */
 @Data
-public class ShortLinkStatsAccessRecordReqDTO extends Page<LinkAccessLogsDO> {
+public class ShortLinkStatsAccessRecordReqDTO extends Page {
 
     /**
      * 完整短链接
@@ -34,5 +33,4 @@ public class ShortLinkStatsAccessRecordReqDTO extends Page<LinkAccessLogsDO> {
      * 启用标识 0：启用 1：未启用
      */
     private Integer enableStatus;
-
 }

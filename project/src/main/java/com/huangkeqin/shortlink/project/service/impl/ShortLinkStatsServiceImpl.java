@@ -47,6 +47,11 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
 
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
 
+    /**
+     * 获取短链接监控数据
+     * @param requestParam 获取短链接监控数据入参
+     * @return
+     */
     public ShortLinkStatsRespDTO oneShortLinkStats(ShortLinkStatsReqDTO requestParam) {
         //checkGroupBelongToUser(requestParam.getGid());
         List<LinkAccessStatsDO> listStatsByShortLink = linkAccessStatsMapper.listStatsByShortLink(requestParam);
@@ -407,8 +412,13 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
     }
 
 
+    /**
+     * 分页查询单个短链接监控访问记录数据
+     * @param requestParam 获取短链接监控访问记录数据入参
+     * @return
+     */
     public IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
-        checkGroupBelongToUser(requestParam.getGid());
+      //  checkGroupBelongToUser(requestParam.getGid());
         LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
                 .eq(LinkAccessLogsDO::getFullShortUrl, requestParam.getFullShortUrl())
                 .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate(), requestParam.getEndDate())

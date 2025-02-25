@@ -1,4 +1,4 @@
-package com.huangkeqin.shortlink.project.dto.resp;
+package com.huangkeqin.shortlink.admin.remote.dto.resp;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
