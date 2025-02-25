@@ -9,6 +9,7 @@ import com.huangkeqin.shortlink.admin.remote.dto.req.*;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkStatsRespDTO;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -139,4 +140,16 @@ public interface ShortLinkRemoteService {
    default void removeRecycleBin(RecycleBinRemoveReqDTO requestParam){
        HttpUtil.post("http://127.0.0.1:8001/api/short-link/v1/recycle-bin/remove", JSON.toJSONString(requestParam));
    }
+
+    default Result<ShortLinkStatsRespDTO> oneShortLinkStats(ShortLinkStatsReqDTO requestParam){
+        String url = "http://127.0.0.1:8001/api/short-link/v1/stats?"
+                + "fullShortUrl=" + requestParam.getFullShortUrl()
+                + "&gid=" + requestParam.getGid()
+                + "&startDate=" + requestParam.getStartDate()
+                + "&endDate=" + requestParam.getEndDate()
+                + "&enableStatus=" + requestParam.getEnableStatus();
+        String resultBodyStr = HttpUtil.get(url);
+        return JSON.parseObject(resultBodyStr, new TypeReference<>() {
+        });
+    }
 }
