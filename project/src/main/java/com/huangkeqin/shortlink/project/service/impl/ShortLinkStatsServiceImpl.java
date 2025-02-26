@@ -4,12 +4,15 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huangkeqin.shortlink.project.common.biz.user.UserContext;
+import com.huangkeqin.shortlink.project.common.convention.exception.ClientException;
 import com.huangkeqin.shortlink.project.common.convention.exception.ServiceException;
+import com.huangkeqin.shortlink.project.config.GotoDomainWhiteListConfiguration;
 import com.huangkeqin.shortlink.project.dao.entity.*;
 import com.huangkeqin.shortlink.project.dao.mapper.*;
 import com.huangkeqin.shortlink.project.dto.req.ShortLinkGroupStatsAccessRecordReqDTO;
@@ -18,6 +21,7 @@ import com.huangkeqin.shortlink.project.dto.req.ShortLinkStatsAccessRecordReqDTO
 import com.huangkeqin.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import com.huangkeqin.shortlink.project.dto.resp.*;
 import com.huangkeqin.shortlink.project.service.ShortLinkStatsService;
+import com.huangkeqin.shortlink.project.toolkit.LinkUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +50,8 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
 
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
+
+    private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
 
     /**
      * 获取短链接监控数据
@@ -491,6 +497,21 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         List<GroupDO> groupDOList = linkGroupMapper.selectList(queryWrapper);
         if (CollUtil.isEmpty(groupDOList)) {
             throw new ServiceException("用户信息与分组标识不匹配");
+        }
+    }
+
+    private void verificationWhitelist(String originUrl) {
+        Boolean enable = gotoDomainWhiteListConfiguration.getEnable();
+        if (enable == null || !enable) {
+            return;
+        }
+        String domain = LinkUtil.extractDomain(originUrl);
+        if (StrUtil.isBlank(domain)) {
+            throw new ClientException("跳转链接填写错误");
+        }
+        List<String> details = gotoDomainWhiteListConfiguration.getDetails();
+        if (!details.contains(domain)) {
+            throw new ClientException("演示环境为避免恶意攻击，请生成以下网站跳转链接：" + gotoDomainWhiteListConfiguration.getNames());
         }
     }
 

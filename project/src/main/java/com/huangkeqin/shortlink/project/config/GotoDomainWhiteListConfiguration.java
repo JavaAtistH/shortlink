@@ -25,7 +25,7 @@ public class GotoDomainWhiteListConfiguration {
     private String names;
 
     /**
-     * 可跳转的原始链接域名
+     * 可以跳转的原始链接域名
      */
     private List<String> details;
 }
