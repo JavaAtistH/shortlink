@@ -93,6 +93,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
 
     @Value("${short-link.domain.default}")
     private String createShortLinkDefaultDomain;
+
     /**
      * 创建短链接
      * 此方法接收一个ShortLinkCreateReqDTO对象作为参数，用于创建一个新的短链接
@@ -354,7 +355,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
                     .eq(ShortLinkDO::getDelFlag, 0)
                     .eq(ShortLinkDO::getEnableStatus, 0);
             ShortLinkDO shortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (shortLinkDO == null || shortLinkDO.getValidDate().before(new Date())) {
+            if (shortLinkDO == null || shortLinkDO.getValidDate() != null && shortLinkDO.getValidDate().before(new Date())) {
                 //当查出来的短链接有效时间小于当前时间，处理方法和没有查到短链接的时候一样处理
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.MINUTES);
                 response.sendRedirect("/page/notfound");
