@@ -192,7 +192,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             //  这里只是为了防止重复，加上时间戳
             originUrl += System.currentTimeMillis();
             //布隆过滤器判断数据库中是否存在该短链接
-            if (!shortUriCreateCachePenetrationBloomFilter.contains(requestParam.getDomain() + "/" + shortUri)) {
+            if (!shortUriCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortUri)) {
                 break;
             } else {
                 customGenerate++;
