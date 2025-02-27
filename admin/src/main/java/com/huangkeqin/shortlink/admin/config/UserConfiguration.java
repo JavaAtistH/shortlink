@@ -1,7 +1,9 @@
 package com.huangkeqin.shortlink.admin.config;
 
 
+import com.huangkeqin.shortlink.admin.common.biz.user.UserFlowRiskControlFilter;
 import com.huangkeqin.shortlink.admin.common.biz.user.UserTransmitFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +38,21 @@ public class UserConfiguration {
         // 设置过滤器的执行顺序，0表示最高优先级
         registration.setOrder(0);
         // 返回配置好的FilterRegistrationBean对象
+        return registration;
+    }
+
+    /**
+     * 用户操作流量风控过滤器
+     */
+    @Bean
+    @ConditionalOnProperty(name = "short-link.flow-limit.enable", havingValue = "true")
+    public FilterRegistrationBean<UserFlowRiskControlFilter> globalUserFlowRiskControlFilter(
+            StringRedisTemplate stringRedisTemplate,
+            UserFlowRiskControlConfiguration userFlowRiskControlConfiguration) {
+        FilterRegistrationBean<UserFlowRiskControlFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new UserFlowRiskControlFilter(stringRedisTemplate, userFlowRiskControlConfiguration));
+        registration.addUrlPatterns("/*");
+        registration.setOrder(10);
         return registration;
     }
 }
