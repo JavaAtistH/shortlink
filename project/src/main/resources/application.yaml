@@ -30,3 +30,8 @@ short-link:
         - juejin.cn
         - cnblogs.com
         - www.huangkeqin.com
+        -
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml
