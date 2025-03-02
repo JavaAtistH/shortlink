@@ -146,15 +146,8 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
         try {
             baseMapper.insert(shortLinkDO);
             shortLinkGotoMapper.insert(linkGotoDO);
-        } catch (DuplicateKeyException e) {//保存唯一索引冲突
-            LambdaQueryWrapper<ShortLinkDO> queryWrapper = Wrappers.lambdaQuery(ShortLinkDO.class)
-                    .eq(ShortLinkDO::getFullShortUrl, fullShortUrl);
-            ShortLinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
-            //如果不为空，则说明数据库中确实已经有该短链接，判断为存在，没有误判
-            if (hasShortLinkDO != null) {
-                log.warn("短链接：{}重复入库", fullShortUrl);
+        } catch (DuplicateKeyException e) {
                 throw new ServiceException("短链接生成重复");
-            }
         }
         //缓存预热，创建出来就加到缓存中
         stringRedisTemplate.opsForValue()
@@ -186,11 +179,13 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
             }
             //原始链接
             String originUrl = requestParam.getOriginUrl();
-            shortUri = HashUtil.hashToBase62(originUrl);
             //如果冲突了,则url+System.currentTimeMillis()重新生成短链接,如果不这样，同一个URL生成的短链接始终是一样的
             //这里加上 System.currentTimeMillis(）不会有什么影响，因为原始链接已经保存在数据库了，短链接与原始链接是映射的关系，
             //  这里只是为了防止重复，加上时间戳
-            originUrl += System.currentTimeMillis();
+            //originUrl += System.currentTimeMillis();
+            originUrl += UUID.randomUUID().toString();
+            shortUri = HashUtil.hashToBase62(originUrl);
+
             //布隆过滤器判断数据库中是否存在该短链接
             if (!shortUriCreateCachePenetrationBloomFilter.contains(createShortLinkDefaultDomain + "/" + shortUri)) {
                 break;
