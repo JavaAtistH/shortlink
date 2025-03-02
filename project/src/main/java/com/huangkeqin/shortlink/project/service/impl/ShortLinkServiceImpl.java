@@ -114,6 +114,7 @@ public class ShortLinkServiceImpl extends ServiceImpl<ShortLinkMapper, ShortLink
      * @param requestParam 短链接创建请求数据传输对象，包含创建短链接所需的信息
      * @return 返回短链接创建响应数据传输对象，包含生成的完整短链接URL、原始URL和全局ID
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO requestParam) {
         // 生成短链接的后缀
