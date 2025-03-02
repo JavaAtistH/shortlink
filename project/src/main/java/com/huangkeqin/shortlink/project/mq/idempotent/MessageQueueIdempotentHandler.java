@@ -23,6 +23,7 @@ public class MessageQueueIdempotentHandler {
      *
      * @param messageId 消息唯一标识
      * @return 消息是否消费过
+     *
      */
     public boolean isMessageBeingConsumed(String messageId) {
         String key = IDEMPOTENT_KEY_PREFIX + messageId;
@@ -34,6 +35,7 @@ public class MessageQueueIdempotentHandler {
      *
      * @param messageId 消息唯一标识
      * @return 消息是否执行完成
+     *
      */
     public boolean isAccomplish(String messageId) {
         String key = IDEMPOTENT_KEY_PREFIX + messageId;
@@ -44,6 +46,7 @@ public class MessageQueueIdempotentHandler {
      * 设置消息流程执行完成
      *
      * @param messageId 消息唯一标识
+     *
      */
     public void setAccomplish(String messageId) {
         String key = IDEMPOTENT_KEY_PREFIX + messageId;
