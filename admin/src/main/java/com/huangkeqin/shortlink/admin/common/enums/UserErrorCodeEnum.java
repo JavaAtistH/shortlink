@@ -3,7 +3,6 @@ package com.huangkeqin.shortlink.admin.common.enums;
 import com.huangkeqin.shortlink.admin.common.convention.errorcode.IErrorCode;
 
 public enum UserErrorCodeEnum implements IErrorCode {
-    USER_TOKEN_FAIL("A000200", "用户token验证失败"),
     USER_NULL("B00200", "用户不存在"),
     USER_NAME_EXIST("B00201", "用户名已存在"),
     USER_EXIST("B00201", "用户已存在"),
