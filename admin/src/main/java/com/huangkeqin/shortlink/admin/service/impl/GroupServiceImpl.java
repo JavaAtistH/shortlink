@@ -14,6 +14,7 @@ import com.huangkeqin.shortlink.admin.dao.mapper.GroupMapper;
 import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupSortReqDTO;
 import com.huangkeqin.shortlink.admin.dto.req.ShortLinkGroupUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.dto.resp.ShortLinkGroupRespDTO;
+import com.huangkeqin.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.huangkeqin.shortlink.admin.remote.ShortLinkRemoteService;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.huangkeqin.shortlink.admin.service.GroupService;
@@ -38,6 +39,8 @@ import static com.huangkeqin.shortlink.admin.common.constant.RedisCacheConstant.
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implements GroupService {
+
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
 
     private final RedissonClient redissonClient;
 
@@ -130,7 +133,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO> implemen
         //远程调用查询分组内短链接数量
         // groupDOList.stream().map(GroupDO::getGid).toList()是一个流式操作，
         // 用于获取 groupDOList 中每个 GroupDO 对象的 gid，并返回一个包含这些 gid 的列表。
-        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkRemoteService
+        Result<List<ShortLinkGroupCountQueryRespDTO>> listResult = shortLinkActualRemoteService
                 .linkGroupShortLinkCount(groupDOList.stream().map(GroupDO::getGid).toList());
         // 将 groupDOList 中的每个 GroupDO 对象转换为 ShortLinkGroupRespDTO 对象，
         List<ShortLinkGroupRespDTO> shortLinkGroupRespDTOList = BeanUtil.copyToList(groupDOList, ShortLinkGroupRespDTO.class);

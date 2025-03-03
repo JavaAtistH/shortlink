@@ -3,6 +3,7 @@ package com.huangkeqin.shortlink.admin.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
 import com.huangkeqin.shortlink.admin.common.convention.result.Results;
+import com.huangkeqin.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.huangkeqin.shortlink.admin.remote.ShortLinkRemoteService;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkStatsAccessRecordReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkStatsReqDTO;
@@ -19,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ShortLinkStatsController {
 
-    /**
-     * 后续重构为 feign调用
-     */
-    ShortLinkRemoteService shortLinkRemoteService=new ShortLinkRemoteService() {
-    };
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
+
+
 
     /**
      * 访问单个短链接指定时间内监控数据
@@ -31,7 +30,12 @@ public class ShortLinkStatsController {
      */
     @GetMapping("/api/short-link/admin/v1/stats")
     public Result<ShortLinkStatsRespDTO> shortLinkStats(ShortLinkStatsReqDTO requestParam){
-        return shortLinkRemoteService.oneShortLinkStats(requestParam);
+        return shortLinkActualRemoteService.oneShortLinkStats(
+                requestParam.getFullShortUrl(),
+                requestParam.getGid(),
+                requestParam.getEnableStatus(),
+                requestParam.getStartDate(),
+                requestParam.getEndDate());
     }
 
     /**
@@ -39,7 +43,14 @@ public class ShortLinkStatsController {
      */
     @GetMapping("/api/short-link/admin/v1/stats/access-record")
     public Result<IPage<ShortLinkStatsAccessRecordRespDTO>> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
-        return shortLinkRemoteService.shortLinkStatsAccessRecord(requestParam);
+        return shortLinkActualRemoteService.shortLinkStatsAccessRecord(
+                requestParam.getFullShortUrl(),
+                requestParam.getGid(),
+                requestParam.getStartDate(),
+                requestParam.getEndDate(),
+                requestParam.getEnableStatus(),
+                requestParam.getCurrent(),
+                requestParam.getSize());
     }
 
 }

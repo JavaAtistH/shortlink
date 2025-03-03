@@ -1,22 +1,29 @@
 package com.huangkeqin.shortlink.admin.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.huangkeqin.shortlink.admin.common.convention.result.Result;
 import com.huangkeqin.shortlink.admin.common.convention.result.Results;
+import com.huangkeqin.shortlink.admin.remote.ShortLinkActualRemoteService;
 import com.huangkeqin.shortlink.admin.remote.ShortLinkRemoteService;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.huangkeqin.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 短链接后管控制层
  */
 @RestController
+@RequiredArgsConstructor
 public class ShortLinkController {
-    //TODO 后续重构为SpringCloud Feign调用
+
+    private final ShortLinkActualRemoteService shortLinkActualRemoteService;
+
+
     ShortLinkRemoteService shortLinkRemoteService = new ShortLinkRemoteService() {
     };
 
@@ -27,7 +34,7 @@ public class ShortLinkController {
      */
     @PostMapping("/api/short-link/admin/v1/create")
     public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO requestParam){
-        return shortLinkRemoteService.createShortLink(requestParam);
+        return shortLinkActualRemoteService.createShortLink(requestParam);
     }
 
     /**
@@ -37,8 +44,8 @@ public class ShortLinkController {
      * @return
      */
     @GetMapping("/api/short-link/admin/v1/page")
-    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
-        return shortLinkRemoteService.pageShortLink(requestParam);
+    public Result< Page<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+        return shortLinkActualRemoteService.pageShortLink(requestParam.getGid(), requestParam.getOrderTag(), requestParam.getCurrent(), requestParam.getSize());
     }
     /**
      * 修改短链接
