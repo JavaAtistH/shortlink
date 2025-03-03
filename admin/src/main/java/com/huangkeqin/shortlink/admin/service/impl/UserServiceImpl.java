@@ -161,7 +161,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         Map<Object, Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(USER_LOGIN_KEY + requestParam.getUsername());
         // 如果用户已登录，更新登录状态有效期并返回token
         if (CollUtil.isNotEmpty(hasLoginMap)) {
-            stringRedisTemplate.expire(USER_LOGIN_KEY + requestParam.getUsername(), 30L, TimeUnit.MINUTES);
+            stringRedisTemplate.expire(USER_LOGIN_KEY + requestParam.getUsername(), 30L, TimeUnit.DAYS);
             // 从登录信息中提取token
             String token = hasLoginMap.keySet().stream()
                     .findFirst()
